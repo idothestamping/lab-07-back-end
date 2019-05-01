@@ -9,8 +9,6 @@ const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
-var weatherArr = [];
-
 
 app.get('/location', (request, response) => {
   try {
@@ -27,11 +25,9 @@ app.get('/location', (request, response) => {
         })
         
     } catch( err ) {
-      console.log('Sorry, There was an Error:', err);
-      response.status(500).send('Sorry, There was an Error');
+      handleError(error, 'events');
     }
 });
-
 
 app.get('/weather', (request, response) => {
   try {
@@ -42,8 +38,7 @@ app.get('/weather', (request, response) => {
       response.status(200).send(weather);
     })
   } catch( error ) {
-    console.log('Sorry, There was an Error');
-    response.status(500).send('Sorry, There was an Error');
+    handleError(error, 'events');
   }
 });
 
@@ -94,4 +89,8 @@ function Event(eventInfo){
 function getEvents(eventResponse){
   let result = eventResponse.map(event => new Event(event));
   return result.splice(0,20);
+}
+
+function handleError(response, endpoint){
+  response.status(500).send({status: 500 , responseText: `Error on ${endpoint}`});
 }
