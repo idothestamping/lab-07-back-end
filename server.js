@@ -35,35 +35,34 @@ app.get('/location', (request, response) => {
 
 app.get('/weather', (request, response) => {
   try {
-    const weatherData = require('./data/darksky.json');
-    weatherArr = weatherData.daily.data.map(data => {
-      let forecast =  data.summary;
-      let time = data.time;
-      return new Weather(forecast, time);
+    let weatherURL = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`;
+    superagent.get(weatherURL)
+    .end((err, weatherURL) => {
+      const weather = getWeather(weatherURL.body);
+      response.status(200).send(weather);
     })
-    response.status(200).send(weatherArr);
-
   } catch( error ) {
     console.log('Sorry, There was an Error');
     response.status(500).send('Sorry, There was an Error');
   }
 });
 
-// app.get('/event', (request, response) => {
-//   try {
-//     const weatherData = require('./data/darksky.json');
-//     weatherArr = weatherData.daily.data.map(data => {
-//       let forecast =  data.summary;
-//       let time = data.time;
-//       return new Weather(forecast, time);
-//     })
-//     response.status(200).send(weatherArr);
+app.get('/events', (request,response) => {
+  console.log('dasf', request.query.data.longitude);
+  try{
+    let eventURL = `https://www.eventbriteapi.com/v3/events/search?location.longitude=${request.query.data.longitude}&location.latitude=${request.query.data.latitude}&expand=venue`;
+    superagent.get(eventURL)
+      .set('Authorization', `Bearer ${process.env.EVENTBRITE_API_KEY}`)
+      .end((err, eventURL) => {
 
-//   } catch( error ) {
-//     console.log('Sorry, There was an Error');
-//     response.status(500).send('Sorry, There was an Error');
-//   }
-// });
+        const event = getEvents(eventURL.body.events);
+
+        response.send(event);
+      });
+  } catch(error){
+    handleError(error, 'events');
+  }
+});
 
 app.listen(PORT,()=> console.log(`Listening on port ${PORT}`));
 
@@ -74,7 +73,25 @@ function Place (searchQuery, newgeodata) {
   this.longitude = newgeodata[0].geometry.location.lng;
 }
 
-function Weather (forecast, time) {
-  this.forecast = forecast;
-  this.time = new Date(time*1000).toDateString();
+function getWeather(weatherResponse) {
+  return weatherResponse.daily.data.map(day => {
+    return new Weather(day);
+  });
+}
+
+function Weather (day) {
+  this.forecast = day.summary;
+  this.time = new Date(day.time*1000).toDateString();
+}
+
+function Event(eventInfo){
+  this.link = eventInfo.url;
+  this.name = eventInfo.name.text;
+  this.event_date = new Date(eventInfo.start.local).toDateString();
+  this.summary = eventInfo.summary;
+}
+
+function getEvents(eventResponse){
+  let result = eventResponse.map(event => new Event(event));
+  return result.splice(0,20);
 }
