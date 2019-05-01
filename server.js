@@ -31,11 +31,11 @@ app.get('/location', (request, response) => {
 app.get('/weather', (request, response) => {
   try {
     const weatherData = require('./data/darksky.json');
-    for(let i=0; i<8; i++){
-      let forecast =  weatherData.daily.data[i].summary;
-      let time = weatherData.daily.data[0].time;
-      new Weather(forecast, time);
-    }
+    weatherArr =weatherData.daily.data.map(data => {
+      let forecast =  data.summary;
+      let time = data.time;
+      return new Weather(forecast, time);
+    })
     response.status(200).send(weatherArr);
 
   } catch( error ) {
@@ -57,5 +57,5 @@ function Place (searchQuery, formattedAddress, lat, lng) {
 function Weather (forecast, time) {
   this.forecast = forecast;
   this.time = new Date(time*1000).toDateString();
-  weatherArr.push(this);
+  // weatherArr.push(this);
 }
