@@ -2,7 +2,7 @@
 
 **Author**:
 
-Doug Klemp
+Doug Klemp and 
 Luke Chandler
 
 **Version**:
