@@ -5,7 +5,6 @@ const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
 const app = express();
-const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
@@ -43,7 +42,6 @@ app.get('/weather', (request, response) => {
 });
 
 app.get('/events', (request,response) => {
-  console.log('dasf', request.query.data.longitude);
   try{
     let eventURL = `https://www.eventbriteapi.com/v3/events/search?location.longitude=${request.query.data.longitude}&location.latitude=${request.query.data.latitude}&expand=venue`;
     superagent.get(eventURL)
